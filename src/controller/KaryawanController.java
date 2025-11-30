@@ -21,12 +21,18 @@ public class KaryawanController implements HttpHandler {
     // handle endpoint
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
+        String query = exchange.getRequestURI().getQuery();
 
         // pilihan method endpoint
         if (method.equals("POST")) {
             handlePost(exchange);
         } else if (method.equals("GET")) {
-            handleGet(exchange);
+            if (query == null) handleGet(exchange);
+            else handleGetById(exchange);
+        } else if (method.equals("PUT")) {
+            handelPut(exchange);
+        } else if (method.equals("DELETE")) {
+            handelDelete(exchange);
         }
     }
 
