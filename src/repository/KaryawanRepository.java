@@ -87,30 +87,18 @@ public class KaryawanRepository {
         }
     }
 
-    public boolean hapusKaryawan(int id) {
-        Connection conn = Database.getConnection();
+    //! buat logic safe update = false
+    public static void hapusKaryawan(int id) {
         try {
-            conn.setAutoCommit(false);
+            Connection conn = Database.getConnection();
+            PreparedStatement ps = conn.prepareStatement(
+                "DELETE FROM karyawan WHERE id=?"
+            );
 
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM karyawan WHERE id=?");
             ps.setInt(1, id);
-            
-            conn.commit();
-
-            return ps.executeUpdate() > 0;
-        } catch(Exception e) {
-            try {
-                conn.rollback();
-            } catch(Exception ex) {
-                ex.printStackTrace();
-            }
-            return false;
-        } finally {
-            try {
-                conn.setAutoCommit(true);
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

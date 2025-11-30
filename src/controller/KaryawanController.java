@@ -27,12 +27,17 @@ public class KaryawanController implements HttpHandler {
         if (method.equals("POST")) {
             handlePost(exchange);
         } else if (method.equals("GET")) {
-            if (query == null) handleGet(exchange);
-            else handleGetById(exchange);
+            if (query == null) {
+                handleGet(exchange);
+            } else {
+                // ! handleGetById tidak bisa digunakan 
+                // * coba untuk membuat parts dan menghubungkan nya dengan handleGetById
+                handleGetById(exchange);
+            }
         } else if (method.equals("PUT")) {
-            handelPut(exchange);
+            handlePut(exchange);
         } else if (method.equals("DELETE")) {
-            handelDelete(exchange);
+            handleDelete(exchange);
         }
     }
 
@@ -59,6 +64,47 @@ public class KaryawanController implements HttpHandler {
         List<Karyawan> list = KaryawanRepository.getAll();
         String resp = gson.toJson(list);
 
+        exchange.sendResponseHeaders(200, resp.length());
+        OutputStream os = exchange.getResponseBody();
+        os.write(resp.getBytes());
+        os.close();
+    }
+
+    // handle handle getById
+    private void handleGetById(HttpExchange exchange) throws IOException {
+        String query = exchange.getRequestURI().getQuery();
+        int id = Integer.parseInt(query.split("=")[1]);
+
+        Karyawan k = KaryawanRepository.cariById(id);
+
+        String resp = gson.toJson(k);
+        sendJson(exchange, resp);
+    }
+
+    // handle PUT
+    private void handlePut(HttpExchange exchange) throws IOException {
+        InputStream body = exchange.getRequestBody();
+        String json = new String(body.readAllBytes(), StandardCharsets.UTF_8);
+
+        Karyawan k = gson.fromJson(json, Karyawan.class);
+        KaryawanRepository.update(k);
+
+        sendJson(exchange, "{\"status\":\"updated\"}");
+    }
+
+    // handle DELETE
+    //! buat logic untuk me nonaktifkan safe update di database di KaryawanRepository
+    private void handleDelete(HttpExchange exchange) throws IOException {
+        String query = exchange.getRequestURI().getQuery();
+        int id = Integer.parseInt(query.split("=")[1]);
+
+        KaryawanRepository.hapusKaryawan(id);
+
+        sendJson(exchange, "{\"status\":\"deleted\"}");
+    }
+
+    // method helper
+    private void sendJson(HttpExchange exchange, String resp) throws IOException {
         exchange.sendResponseHeaders(200, resp.length());
         OutputStream os = exchange.getResponseBody();
         os.write(resp.getBytes());
