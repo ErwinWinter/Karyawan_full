@@ -25,31 +25,18 @@ public class KaryawanController implements HttpHandler {
         // String parts[] = query.split("/");
 
         // pilihan method endpoint
-        // if (method.equals("POST")) {
-        //     handlePost(exchange);
-        // } else if (method.equals("GET")) {
-        //     if (query == null) {
-        //         handleGet(exchange);
-        //     } else {
-        //         // ! handleGetById tidak bisa digunakan 
-        //         // * coba untuk membuat parts dan menghubungkan nya dengan handleGetById
-        //         handleGetById(exchange);
-        //     }
-        // } else if (method.equals("PUT")) {
-        //     handlePut(exchange);
-        // } else if (method.equals("DELETE")) {
-        //     handleDelete(exchange);
-        // }
         switch(method) {
             case "GET" -> handleGet(exchange);
             case "POST" -> handlePost(exchange);
             case "PUT" -> handlePut(exchange);
             case "DELETE" -> handleDelete(exchange);
-            // default -> sendJson(exchange, "Mehtod Not Found", 400);
+            default -> sendJson(exchange, "Mehtod Not Found", 400);
         }
     }
 
     // handle post endpoint dan database
+    //* Refactor method handlePost */
+    //! buat if else statement untuk menghandle error
     private void handlePost(HttpExchange exchange) throws IOException {
         // input value ke endpoint POST di postman
         InputStream body = exchange.getRequestBody();
@@ -70,12 +57,12 @@ public class KaryawanController implements HttpHandler {
     // handle get postman dan database
     private void handleGet(HttpExchange exchange) throws IOException {
         List<Karyawan> list = KaryawanRepository.getAll();
-        String resp = gson.toJson(list);
+        if(list != null) {
+            sendJson(exchange, gson.toJson(list), 200);
 
-        exchange.sendResponseHeaders(200, resp.length());
-        OutputStream os = exchange.getResponseBody();
-        os.write(resp.getBytes());
-        os.close();
+        } else {
+            sendJson(exchange, "Tidak ada Karyawan yang terdaftar", 404);
+        }
     }
 
     // handle handle getById
@@ -90,6 +77,7 @@ public class KaryawanController implements HttpHandler {
     // }
 
     // handle PUT
+    //! buat if else statement untuk menghandle error
     private void handlePut(HttpExchange exchange) throws IOException {
         InputStream body = exchange.getRequestBody();
         String json = new String(body.readAllBytes(), StandardCharsets.UTF_8);
@@ -97,10 +85,11 @@ public class KaryawanController implements HttpHandler {
         Karyawan k = gson.fromJson(json, Karyawan.class);
         KaryawanRepository.update(k);
 
-        sendJson(exchange, "{\"status\":\"updated\"}");
+        sendJson(exchange, gson.toJson(k), 200);
     }
 
     // handle DELETE
+    //! buat if else statement untuk menghandle error
     //! buat logic untuk me nonaktifkan safe update di database di KaryawanRepository
     private void handleDelete(HttpExchange exchange) throws IOException {
         String query = exchange.getRequestURI().getQuery();
@@ -108,14 +97,15 @@ public class KaryawanController implements HttpHandler {
 
         KaryawanRepository.hapusKaryawan(id);
 
-        sendJson(exchange, "{\"status\":\"deleted\"}");
+        sendJson(exchange, "{\"status\":\"deleted\"}", 200);
     }
 
     // method helper
-    private void sendJson(HttpExchange exchange, String resp) throws IOException {
-        exchange.sendResponseHeaders(200, resp.length());
+    private void sendJson(HttpExchange exchange, String resp, int code) throws IOException {
+        byte[] bytes = resp.getBytes(StandardCharsets.UTF_8);
+        exchange.sendResponseHeaders(code, resp.length());
         OutputStream os = exchange.getResponseBody();
-        os.write(resp.getBytes());
+        os.write(bytes);
         os.close();
     }
 }
