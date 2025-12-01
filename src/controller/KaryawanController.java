@@ -21,23 +21,31 @@ public class KaryawanController implements HttpHandler {
     // handle endpoint
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
-        String query = exchange.getRequestURI().getQuery();
+        // String query = exchange.getRequestURI().getQuery();
+        // String parts[] = query.split("/");
 
         // pilihan method endpoint
-        if (method.equals("POST")) {
-            handlePost(exchange);
-        } else if (method.equals("GET")) {
-            if (query == null) {
-                handleGet(exchange);
-            } else {
-                // ! handleGetById tidak bisa digunakan 
-                // * coba untuk membuat parts dan menghubungkan nya dengan handleGetById
-                handleGetById(exchange);
-            }
-        } else if (method.equals("PUT")) {
-            handlePut(exchange);
-        } else if (method.equals("DELETE")) {
-            handleDelete(exchange);
+        // if (method.equals("POST")) {
+        //     handlePost(exchange);
+        // } else if (method.equals("GET")) {
+        //     if (query == null) {
+        //         handleGet(exchange);
+        //     } else {
+        //         // ! handleGetById tidak bisa digunakan 
+        //         // * coba untuk membuat parts dan menghubungkan nya dengan handleGetById
+        //         handleGetById(exchange);
+        //     }
+        // } else if (method.equals("PUT")) {
+        //     handlePut(exchange);
+        // } else if (method.equals("DELETE")) {
+        //     handleDelete(exchange);
+        // }
+        switch(method) {
+            case "GET" -> handleGet(exchange);
+            case "POST" -> handlePost(exchange);
+            case "PUT" -> handlePut(exchange);
+            case "DELETE" -> handleDelete(exchange);
+            // default -> sendJson(exchange, "Mehtod Not Found", 400);
         }
     }
 
@@ -71,15 +79,15 @@ public class KaryawanController implements HttpHandler {
     }
 
     // handle handle getById
-    private void handleGetById(HttpExchange exchange) throws IOException {
-        String query = exchange.getRequestURI().getQuery();
-        int id = Integer.parseInt(query.split("=")[1]);
+    // private void handleGetById(HttpExchange exchange) throws IOException {
+    //     String query = exchange.getRequestURI().getQuery();
+    //     int id = Integer.parseInt(query.split("=")[1]);
 
-        Karyawan k = KaryawanRepository.cariById(id);
+    //     Karyawan k = KaryawanRepository.cariById(id);
 
-        String resp = gson.toJson(k);
-        sendJson(exchange, resp);
-    }
+    //     String resp = gson.toJson(k);
+    //     sendJson(exchange, resp);
+    // }
 
     // handle PUT
     private void handlePut(HttpExchange exchange) throws IOException {
