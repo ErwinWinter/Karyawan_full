@@ -8,10 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KaryawanRepository {
+
+    private static Connection conn = Database.getConnection();
     
     public static void insert(Karyawan k) {
         try {
-            Connection conn = Database.getConnection();
+            // Connection conn = Database.getConnection();
             PreparedStatement stmt = conn.prepareStatement(
                 "INSERT INTO karyawan (nama, jabatan, gaji) VALUES (?, ?, ?)"
             );
@@ -28,7 +30,7 @@ public class KaryawanRepository {
     public static List<Karyawan> getAll() {
         List<Karyawan> list = new ArrayList<>();
         try {
-            Connection conn = Database.getConnection();
+            // Connection conn = Database.getConnection();
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM karyawan");
 
@@ -48,7 +50,7 @@ public class KaryawanRepository {
 
     public static Karyawan cariById(int id) {
         try {
-            Connection conn = Database.getConnection();
+            // Connection conn = Database.getConnection();
             PreparedStatement ps = conn.prepareStatement("SELECT * FROM karyawan WHERE id=?");
             ps.setInt(1, id);
                 
@@ -71,7 +73,7 @@ public class KaryawanRepository {
 
     public static void update(Karyawan k) {
         try {
-            Connection conn = Database.getConnection();
+            // Connection conn = Database.getConnection();
             PreparedStatement ps = conn.prepareStatement(
                 "UPDATE karyawan SET nama=?, jabatan=?, gaji=? WHERE id=?"
             );
@@ -87,18 +89,37 @@ public class KaryawanRepository {
         }
     }
 
-    //! buat logic safe update = false
-    public static void hapusKaryawan(int id) {
+    //* もうオケになるんじゃ。 */
+    public static boolean hapusKaryawan(int id) {
         try {
-            Connection conn = Database.getConnection();
+            // Connection conn = Database.getConnection();
+
+            conn.setAutoCommit(false);
+
             PreparedStatement ps = conn.prepareStatement(
                 "DELETE FROM karyawan WHERE id=?"
             );
 
             ps.setInt(1, id);
-            ps.executeUpdate();
+
+            conn.commit();
+
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
-            e.printStackTrace();
+            try {
+                e.printStackTrace();
+                conn.rollback();
+            } catch(Exception rollback) {
+                rollback.getMessage();
+            }
+
+            return false;
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch(Exception e) {
+                e.getMessage();
+            }
         }
     }
 }
