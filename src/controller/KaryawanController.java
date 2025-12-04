@@ -21,12 +21,18 @@ public class KaryawanController implements HttpHandler {
     // handle endpoint
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
-        // String query = exchange.getRequestURI().getQuery();
+        String query = exchange.getRequestURI().getQuery();
         // String parts[] = query.split("/");
 
         // pilihan method endpoint
         switch(method) {
-            case "GET" -> handleGet(exchange);
+            case "GET" -> {
+                if(query == null) {
+                    handleGet(exchange);
+                } else {
+                    handleGetById(exchange);
+                }
+            }
             case "POST" -> handlePost(exchange);
             case "PUT" -> handlePut(exchange);
             case "DELETE" -> handleDelete(exchange);
@@ -65,16 +71,15 @@ public class KaryawanController implements HttpHandler {
         }
     }
 
-    // handle handle getById
-    // private void handleGetById(HttpExchange exchange) throws IOException {
-    //     String query = exchange.getRequestURI().getQuery();
-    //     int id = Integer.parseInt(query.split("=")[1]);
+    // handle handleGetById
+    private void handleGetById(HttpExchange exchange) throws IOException {
+        String query = exchange.getRequestURI().getQuery();
+        int id = Integer.parseInt(query.split("=")[1]);
 
-    //     Karyawan k = KaryawanRepository.cariById(id);
+        Karyawan k = KaryawanRepository.cariById(id);
 
-    //     String resp = gson.toJson(k);
-    //     sendJson(exchange, resp);
-    // }
+        sendJson(exchange, gson.toJson(k), 200);
+    }
 
     // handle PUT
     //! buat if else statement untuk menghandle error
